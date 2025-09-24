@@ -1,0 +1,16 @@
+# Render service env vars (set in Render dashboard)
+RENDER_API_KEY=
+RENDER_SERVICE_ID=
+# Backend app vars
+NODE_ENV=production
+DATABASE_URL=
+REDIS_URL=
+JWT_SECRET=
+REFRESH_TOKEN_SECRET=
+CORS_ORIGIN=https://app.placeholder-domain.com
+SENTRY_DSN=
+EMAIL_FROM=no-reply@example.com
+EMAIL_PROVIDER=mock
+SENDGRID_API_KEY=
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX=60

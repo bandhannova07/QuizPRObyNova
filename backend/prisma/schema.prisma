@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  user
+  admin
+  pro
+}
+
+enum Category {
+  GK
+  Geography
+  Science
+  Literature
+  Technology
+  PopCulture
+  Sports
+  Travel
+}
+
+enum Difficulty {
+  easy
+  medium
+  hard
+}
+
+model User {
+  id                        String        @id @default(uuid())
+  username                  String        @unique
+  email                     String        @unique
+  email_verified            Boolean       @default(false)
+  country                   String
+  password_hash             String
+  avatar_url                String?
+  xp                        Int           @default(0)
+  level                     Int           @default(1)
+  coins                     Int           @default(0)
+  created_at                DateTime      @default(now())
+  last_active_at            DateTime      @updatedAt
+  role                      Role          @default(user)
+  subscription_expires_at   DateTime?
+  banned_until              DateTime?
+  sessions                  GameSession[]
+  questions_created         Question[]    @relation("CreatedQuestions")
+}
+
+model Question {
+  id                String     @id @default(uuid())
+  category          Category
+  difficulty        Difficulty
+  question_text     String
+  options           Json
+  correct_index     Int
+  explanation       String?
+  image_url         String?
+  audio_url         String?
+  created_by        String
+  created_at        DateTime   @default(now())
+  import_timestamp  DateTime   @default(now())
+  source            String?
+
+  creator           User       @relation(fields: [created_by], references: [id], name: "CreatedQuestions")
+
+  @@index([category])
+  @@index([difficulty])
+}
+
+model GameSession {
+  id               String    @id @default(uuid())
+  user_id          String
+  mode             String
+  questions_played Json
+  score            Int       @default(0)
+  correct_count    Int       @default(0)
+  wrong_count      Int       @default(0)
+  streaks          Json
+  created_at       DateTime  @default(now())
+
+  user             User      @relation(fields: [user_id], references: [id])
+  @@index([user_id])
+}
+
+model Leaderboard {
+  id         String   @id @default(uuid())
+  user_id    String
+  period     String
+  score      Int      @default(0)
+  updated_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id])
+  @@unique([user_id, period])
+  @@index([period, score])
+}
+
+model VerificationToken {
+  id         String   @id @default(uuid())
+  user_id    String
+  token      String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id])
+  @@index([user_id])
+}
+
+model PasswordResetToken {
+  id         String   @id @default(uuid())
+  user_id    String
+  token      String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id])
+  @@index([user_id])
+}

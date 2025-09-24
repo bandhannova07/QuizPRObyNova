@@ -1,0 +1,234 @@
+openapi: 3.0.3
+info:
+  title: QuizPRO API
+  version: 1.0.0
+servers:
+  - url: https://api.placeholder-domain.com
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200': { description: OK }
+  /auth/signup:
+    post:
+      summary: Sign up
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                email: { type: string, format: email }
+                country: { type: string }
+                password: { type: string }
+              required: [username, email, country, password]
+      responses:
+        '200': { description: Created }
+        '409': { description: Conflict }
+  /auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+              required: [email, password]
+      responses:
+        '200': { description: OK }
+        '401': { description: Unauthorized }
+  /auth/request-verification:
+    post:
+      summary: Request verification email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+              required: [email]
+      responses:
+        '200': { description: Sent }
+  /auth/verify:
+    get:
+      summary: Verify email using token
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Verified }
+        '400': { description: Invalid or expired token }
+  /auth/request-password-reset:
+    post:
+      summary: Request password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+              required: [email]
+      responses:
+        '200': { description: Sent }
+  /auth/reset-password:
+    post:
+      summary: Reset password using token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token: { type: string }
+                password: { type: string, format: password }
+              required: [token, password]
+      responses:
+        '200': { description: Updated }
+        '400': { description: Invalid or expired token }
+  /questions:
+    get:
+      summary: List questions
+      responses:
+        '200': { description: OK }
+  /play/start:
+    post:
+      summary: Start game session (auth required)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId: { type: string, format: uuid }
+        '401': { description: Unauthorized }
+  /play/finish:
+    post:
+      summary: Finish game session (auth required)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId: { type: string, format: uuid }
+                score: { type: integer }
+                correct_count: { type: integer }
+                wrong_count: { type: integer }
+                questions_played: { type: array, items: { } }
+                streaks: { type: array, items: { }, nullable: true }
+              required: [sessionId, score, correct_count, wrong_count, questions_played]
+      responses:
+        '200': { description: Updated }
+        '400': { description: Bad Request }
+        '401': { description: Unauthorized }
+  /leaderboard:
+    get:
+      summary: Get leaderboard
+      responses:
+        '200': { description: OK }
+  /admin/questions:
+    get:
+      summary: List questions (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { description: OK }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+    post:
+      summary: Create question (admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category: { type: string, enum: [GK, Geography, Science, Literature, Technology, PopCulture, Sports, Travel] }
+                difficulty: { type: string, enum: [easy, medium, hard] }
+                question_text: { type: string }
+                options: { type: array, items: { type: string }, minItems: 4, maxItems: 4 }
+                correct_index: { type: integer, minimum: 0, maximum: 3 }
+                explanation: { type: string, nullable: true }
+                image_url: { type: string, nullable: true }
+                audio_url: { type: string, nullable: true }
+              required: [category, difficulty, question_text, options, correct_index]
+      responses:
+        '200': { description: Created }
+        '400': { description: Bad Request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+  /admin/questions/{id}:
+    put:
+      summary: Update question (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question_text: { type: string }
+                options: { type: array, items: { type: string }, minItems: 4, maxItems: 4 }
+                correct_index: { type: integer, minimum: 0, maximum: 3 }
+                explanation: { type: string, nullable: true }
+                image_url: { type: string, nullable: true }
+                audio_url: { type: string, nullable: true }
+                category: { type: string, enum: [GK, Geography, Science, Literature, Technology, PopCulture, Sports, Travel] }
+                difficulty: { type: string, enum: [easy, medium, hard] }
+      responses:
+        '200': { description: Updated }
+        '400': { description: Bad Request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+    delete:
+      summary: Delete question (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Deleted }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []

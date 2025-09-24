@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://app.placeholder-domain.com/sitemap.xml

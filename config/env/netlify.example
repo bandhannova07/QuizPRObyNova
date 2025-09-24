@@ -1,0 +1,6 @@
+# Netlify env vars (set in Netlify UI or via CLI)
+NETLIFY_SITE_NAME=quizpro-bynova
+NETLIFY_AUTH_TOKEN=
+# Frontend app vars
+NEXT_PUBLIC_API_URL=https://api.placeholder-domain.com
+NEXT_PUBLIC_SENTRY_DSN=

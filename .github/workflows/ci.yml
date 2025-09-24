@@ -1,0 +1,40 @@
+name: CI
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - name: Install deps (frontend)
+        run: pnpm install --frozen-lockfile
+        working-directory: frontend
+      - name: Typecheck (frontend)
+        run: pnpm typecheck
+        working-directory: frontend
+      - name: Lint (frontend)
+        run: pnpm lint
+        working-directory: frontend
+      - name: Install deps (backend)
+        run: pnpm install --frozen-lockfile
+        working-directory: backend
+      - name: Typecheck (backend)
+        run: pnpm typecheck
+        working-directory: backend
+      - name: Lint (backend)
+        run: pnpm lint
+        working-directory: backend
+      - name: Unit tests (backend)
+        run: pnpm test -- --ci
+        working-directory: backend
